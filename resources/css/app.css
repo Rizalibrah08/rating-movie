@@ -2,21 +2,37 @@
 
 @import 'tw-animate-css';
 
+/* ============================================================================
+   Cinematic Dark Theme — Movie Review System
+   Inspired by Letterboxd (charcoal background) + Metacritic (color-coded score)
+   ============================================================================ */
+
+/* Self-hostable fonts via Google Fonts.
+   - Bebas Neue: display / movie titles (uppercase, condensed, cinematic)
+   - Inter: UI / body
+   - JetBrains Mono: numerical score badges */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Font families exposed as Tailwind utilities: font-sans, font-display, font-mono */
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Inter', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    --font-display: 'Bebas Neue', Impact, 'Arial Narrow Bold', sans-serif;
+    --font-mono:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
+    /* Default shadcn tokens (kept for compatibility with existing UI components) */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
 
@@ -59,16 +75,24 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Cinematic custom tokens (Section 10.A.1 PRD) */
+    --color-cinema-base: var(--cinema-base);
+    --color-cinema-surface: var(--cinema-surface);
+    --color-cinema-elevated: var(--cinema-elevated);
+    --color-cinema-border: var(--cinema-border);
+    --color-cinema-text: var(--cinema-text);
+    --color-cinema-muted: var(--cinema-muted);
+    --color-cinema-teal: var(--cinema-teal);
+    --color-cinema-orange: var(--cinema-orange);
+
+    /* Score badge colors (Metacritic-style) */
+    --color-score-green: var(--score-green);
+    --color-score-yellow: var(--score-yellow);
+    --color-score-red: var(--score-red);
+    --color-score-grey: var(--score-grey);
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
     *,
     ::after,
@@ -83,12 +107,14 @@
     body,
     html {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+            'Inter', ui-sans-serif, system-ui, sans-serif,
             'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
             'Noto Color Emoji';
     }
 }
 
+/* Light defaults — kept for admin/auth pages that toggle theme via useAppearance.
+   Public movie pages force `.dark` to always render cinematic palette. */
 :root {
     --background: hsl(0 0% 100%);
     --foreground: hsl(0 0% 3.9%);
@@ -124,42 +150,58 @@
     --sidebar-border: hsl(0 0% 91%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(0 0% 98%);
+
+    /* Cinematic tokens shared light/dark — values stay constant */
+    --cinema-base: hsl(210 14% 9%);          /* #14181c */
+    --cinema-surface: hsl(210 17% 13%);      /* #1c2228 */
+    --cinema-elevated: hsl(210 14% 16%);     /* #222a31 */
+    --cinema-border: hsl(210 16% 20%);       /* #2c343c */
+    --cinema-text: hsl(210 17% 93%);         /* #e9edf0 */
+    --cinema-muted: hsl(210 13% 65%);        /* #9aa7b3 */
+    --cinema-teal: hsl(173 100% 38%);        /* #00c1a9 */
+    --cinema-orange: hsl(30 100% 50%);       /* #ff8000 */
+
+    --score-green: hsl(96 60% 50%);          /* #66cc33 */
+    --score-yellow: hsl(45 100% 60%);        /* #ffcc33 */
+    --score-red: hsl(0 100% 65%);            /* #ff4d4d */
+    --score-grey: hsl(220 9% 46%);           /* #6b7280 */
 }
 
+/* Dark mode (also applied to public movie pages via PublicLayout) */
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 84% 60%);
+    --background: hsl(210 14% 9%);              /* cinema-base */
+    --foreground: hsl(210 17% 93%);             /* cinema-text */
+    --card: hsl(210 17% 13%);                   /* cinema-surface */
+    --card-foreground: hsl(210 17% 93%);
+    --popover: hsl(210 17% 13%);
+    --popover-foreground: hsl(210 17% 93%);
+    --primary: hsl(173 100% 38%);               /* teal — primary CTA */
+    --primary-foreground: hsl(210 14% 9%);
+    --secondary: hsl(210 14% 16%);              /* elevated */
+    --secondary-foreground: hsl(210 17% 93%);
+    --muted: hsl(210 14% 16%);
+    --muted-foreground: hsl(210 13% 65%);
+    --accent: hsl(210 14% 16%);
+    --accent-foreground: hsl(210 17% 93%);
+    --destructive: hsl(0 100% 65%);             /* score-red doubles as destructive */
     --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --border: hsl(210 16% 20%);                 /* cinema-border */
+    --input: hsl(210 16% 20%);
+    --ring: hsl(173 100% 38%);                  /* teal focus ring */
+    --chart-1: hsl(96 60% 50%);                 /* score-green */
+    --chart-2: hsl(45 100% 60%);                /* score-yellow */
+    --chart-3: hsl(0 100% 65%);                 /* score-red */
+    --chart-4: hsl(173 100% 38%);               /* teal */
+    --chart-5: hsl(30 100% 50%);                /* orange */
+    --sidebar-background: hsl(210 17% 13%);
+    --sidebar-foreground: hsl(210 17% 93%);
+    --sidebar-primary: hsl(173 100% 38%);
+    --sidebar-primary-foreground: hsl(210 14% 9%);
+    --sidebar-accent: hsl(210 14% 16%);
+    --sidebar-accent-foreground: hsl(210 17% 93%);
+    --sidebar-border: hsl(210 16% 20%);
+    --sidebar-ring: hsl(173 100% 38%);
+    --sidebar: hsl(210 17% 13%);
 }
 
 @layer base {
@@ -168,5 +210,33 @@
     }
     body {
         @apply bg-background text-foreground;
+        font-family: var(--font-sans);
+    }
+}
+
+/* Cinematic helpers — bisa dipakai utility class langsung di template */
+@layer components {
+    .font-display {
+        font-family: var(--font-display);
+        letter-spacing: 0.01em;
+    }
+
+    .font-mono {
+        font-family: var(--font-mono);
+    }
+
+    /* Glassmorphism wrapper untuk panel & review card di hero detail page */
+    .glass {
+        background: hsl(210 14% 9% / 0.5);
+        backdrop-filter: blur(16px) saturate(150%);
+        -webkit-backdrop-filter: blur(16px) saturate(150%);
+        border: 1px solid hsl(0 0% 100% / 0.08);
+    }
+
+    .glass-strong {
+        background: hsl(210 14% 9% / 0.85);
+        backdrop-filter: blur(24px) saturate(150%);
+        -webkit-backdrop-filter: blur(24px) saturate(150%);
+        border-top: 1px solid hsl(210 16% 20%);
     }
 }

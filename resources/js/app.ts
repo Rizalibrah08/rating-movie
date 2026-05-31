@@ -1,7 +1,9 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import PublicLayout from '@/layouts/PublicLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
@@ -17,12 +19,21 @@ createInertiaApp({
                 return AuthLayout;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
+            // Admin area (cinematic dark + sidebar)
+            case name.startsWith('admin/'):
+                return AdminLayout;
+            // Public movie review surface (cinematic dark theme)
+            case name === 'home/Index':
+            case name.startsWith('movies/'):
+            case name.startsWith('profile/'):
+            case name.startsWith('dev/'):
+                return PublicLayout;
             default:
                 return AppLayout;
         }
     },
     progress: {
-        color: '#4B5563',
+        color: '#00c1a9', // accent teal — cinematic theme
     },
 });
 
