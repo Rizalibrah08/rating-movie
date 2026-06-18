@@ -8,7 +8,7 @@ Lihat detail desain & analisis kelemahan di [`task & konteks/prd.md`](task%20%26
 
 - **Backend**: Laravel 13 + Inertia 3 + Fortify (auth, 2FA, passkeys)
 - **Frontend**: Vue 3 + TypeScript + Tailwind v4 + shadcn-vue (reka-ui)
-- **DB**: MySQL/MariaDB (utf8mb4)
+- **DB**: PostgreSQL (Supabase)
 - **Test**: Pest 4 (PHP feature tests)
 - **PHP**: ≥ 8.3
 
@@ -23,12 +23,14 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# Edit .env: setel DB_DATABASE=movie_review, DB_USERNAME, DB_PASSWORD
-# (XAMPP default: root, no password)
-
-# Buat database
-mysql -u root -e "CREATE DATABASE movie_review CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -e "CREATE DATABASE movie_review_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# Edit .env untuk Supabase:
+# Setel DB_CONNECTION=pgsql
+# DB_HOST=db.[project-ref].supabase.co (Koneksi langsung, port 5432)
+# DB_DATABASE=postgres
+# DB_USERNAME=postgres
+# DB_PASSWORD="password_database_anda"
+# VITE_SUPABASE_URL=https://[project-ref].supabase.co
+# VITE_SUPABASE_ANON_KEY=[anon-key]
 
 # Migrate + seed (15 genre, 12 movie, 56 review, 25 blacklist keyword)
 php artisan migrate:fresh --seed
@@ -206,3 +208,12 @@ Test User:     test@example.com     / password
 ## Lisensi
 
 MIT — bebas dipakai untuk tugas kuliah maupun proyek pribadi.
+
+## Log Progres
+
+### Migrasi ke Supabase (Juni 2026)
+- **Database Backend**: Berhasil dimigrasikan dari MySQL lokal ke **PostgreSQL Supabase**. Menggunakan koneksi langsung (direct connection) ke `db.[ref].supabase.co` di port `5432` karena limitasi connection pooler.
+- **Ekstensi PHP**: Mengaktifkan ekstensi `pdo_pgsql` dan `pgsql` secara otomatis di `php.ini` lokal untuk mendukung driver PostgreSQL.
+- **Frontend Client**: Memperbarui konfigurasi `supabaseClient.js` agar menggunakan Vite env variables (`import.meta.env`) serta memperbaiki format URL base Supabase (menghapus path `/rest/v1/`).
+- **SQL Compatibility**: Memperbaiki fungsi `having()` pada controller yang tidak didukung oleh PostgreSQL dengan menggantinya menggunakan standar Eloquent `whereHas()`.
+- **Seeding Database**: Berhasil menjalankan `DatabaseSeeder` di Supabase untuk menyuntikkan data dummy awal (pengguna, film, genre, dan ulasan).

@@ -34,12 +34,15 @@ class HomeController extends Controller
             ]);
 
         $popularThisWeek = Movie::query()
+            ->whereHas('reviews', fn ($q) => $q
+                ->where('status', Review::STATUS_PUBLISHED)
+                ->where('created_at', '>=', now()->subWeek())
+            )
             ->withCount(['reviews as recent_review_count' => fn ($q) => $q
                 ->where('status', Review::STATUS_PUBLISHED)
                 ->where('created_at', '>=', now()->subWeek()),
             ])
             ->withAvg(['reviews as avg_score' => fn ($q) => $q->where('status', Review::STATUS_PUBLISHED)], 'rating')
-            ->having('recent_review_count', '>', 0)
             ->orderByDesc('recent_review_count')
             ->limit(8)
             ->get()
