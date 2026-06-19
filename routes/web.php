@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\GenreController as AdminGenreController;
 use App\Http\Controllers\Admin\ModerationController as AdminModerationController;
 use App\Http\Controllers\Admin\MovieController as AdminMovieController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MoviePublicController;
 use App\Http\Controllers\MyReviewsController;
@@ -64,6 +65,12 @@ Route::prefix('admin')
         Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
         Route::post('reports/{report}/hide', [AdminReportController::class, 'hide'])->name('reports.hide');
         Route::post('reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+
+        // Users management
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::patch('users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.update-role');
+        Route::post('users/{user}/ban', [AdminUserController::class, 'ban'])->name('users.ban');
+        Route::post('users/{user}/unban', [AdminUserController::class, 'unban'])->name('users.unban');
     });
 
 require __DIR__.'/settings.php';

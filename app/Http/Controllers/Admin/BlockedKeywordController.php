@@ -37,7 +37,7 @@ class BlockedKeywordController extends Controller
 
         // Hitung jumlah aktif per kategori untuk dashboard kecil
         $countsByCategory = BlockedKeyword::query()
-            ->selectRaw('category, SUM(is_active) as active, COUNT(*) as total')
+            ->selectRaw('category, SUM(CAST(is_active AS INTEGER)) as active, COUNT(*) as total')
             ->groupBy('category')
             ->get()
             ->keyBy('category');

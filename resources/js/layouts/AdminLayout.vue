@@ -26,6 +26,7 @@ const items: NavItem[] = [
     { label: 'Keywords', href: '/admin/keywords', match: '/admin/keywords' },
     { label: 'Moderation', href: '/admin/moderation', match: '/admin/moderation' },
     { label: 'Reports', href: '/admin/reports', match: '/admin/reports' },
+    { label: 'Users', href: '/admin/users', match: '/admin/users' },
 ];
 
 const page = usePage<any>();

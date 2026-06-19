@@ -14,7 +14,7 @@ use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'trust_score'])]
+#[Fillable(['name', 'email', 'password', 'role', 'trust_score', 'banned_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -36,6 +36,7 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'trust_score' => 'integer',
+            'banned_at' => 'datetime',
         ];
     }
 
@@ -47,5 +48,10 @@ class User extends Authenticatable implements PasskeyUser
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isBanned(): bool
+    {
+        return ! is_null($this->banned_at);
     }
 }

@@ -47,7 +47,7 @@ class DashboardController extends Controller
             $topMovies = Movie::query()
                 ->withAvg(['reviews as avg_score' => fn ($q) => $q->where('status', Review::STATUS_PUBLISHED)], 'rating')
                 ->withCount(['reviews as review_count' => fn ($q) => $q->where('status', Review::STATUS_PUBLISHED)])
-                ->having('review_count', '>=', 2)
+                ->whereHas('reviews', fn ($q) => $q->where('status', Review::STATUS_PUBLISHED), '>=', 2)
                 ->orderByDesc('avg_score')
                 ->limit(5)
                 ->get()
