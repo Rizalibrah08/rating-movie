@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-#[Fillable(['keyword', 'category', 'is_active'])]
+#[Fillable(['keyword', 'category', 'is_active', 'is_regex'])]
 class BlockedKeyword extends Model
 {
     /** @use HasFactory<\Database\Factories\BlockedKeywordFactory> */
@@ -18,6 +18,7 @@ class BlockedKeyword extends Model
     public const CATEGORY_PROMOSI = 'promosi';
     public const CATEGORY_INSULT = 'insult';
     public const CATEGORY_SLANG = 'slang_negative';
+    public const CATEGORY_WHITELIST = 'whitelist';
     public const CATEGORY_OTHER = 'other';
 
     public const CATEGORIES = [
@@ -25,6 +26,7 @@ class BlockedKeyword extends Model
         self::CATEGORY_PROMOSI,
         self::CATEGORY_INSULT,
         self::CATEGORY_SLANG,
+        self::CATEGORY_WHITELIST,
         self::CATEGORY_OTHER,
     ];
 
@@ -36,14 +38,17 @@ class BlockedKeyword extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_regex' => 'boolean',
         ];
     }
 
     protected static function booted(): void
     {
-        // Normalisasi keyword: lowercase + trim, sebelum disimpan
+        // Normalisasi keyword: lowercase + trim, sebelum disimpan (kecuali jika regex)
         static::saving(function (BlockedKeyword $keyword) {
-            $keyword->keyword = Str::of((string) $keyword->keyword)->lower()->trim()->toString();
+            if (! $keyword->is_regex) {
+                $keyword->keyword = Str::of((string) $keyword->keyword)->lower()->trim()->toString();
+            }
         });
 
         // Invalidate cache saat ada perubahan
@@ -57,7 +62,7 @@ class BlockedKeyword extends Model
     /**
      * Ambil semua keyword aktif (cached).
      *
-     * @return array<int, array{keyword: string, category: string}>
+     * @return array<int, array{keyword: string, category: string, is_regex: bool}>
      */
     public static function activeList(): array
     {
@@ -65,8 +70,8 @@ class BlockedKeyword extends Model
             return static::query()
                 ->where('is_active', true)
                 ->orderBy('keyword')
-                ->get(['keyword', 'category'])
-                ->map(fn ($k) => ['keyword' => $k->keyword, 'category' => $k->category])
+                ->get(['keyword', 'category', 'is_regex'])
+                ->map(fn ($k) => ['keyword' => $k->keyword, 'category' => $k->category, 'is_regex' => $k->is_regex])
                 ->all();
         });
     }

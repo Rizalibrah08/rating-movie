@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-
 @import 'tw-animate-css';
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
 
 /* ============================================================================
    Cinematic Dark Theme — Movie Review System
@@ -11,7 +11,6 @@
    - Bebas Neue: display / movie titles (uppercase, condensed, cinematic)
    - Inter: UI / body
    - JetBrains Mono: numerical score badges */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

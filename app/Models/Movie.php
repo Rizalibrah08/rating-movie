@@ -71,7 +71,7 @@ class Movie extends Model
     }
 
     /**
-     * Resolved poster URL — prefer uploaded file, fallback to external URL.
+     * Resolved poster URL — prefer uploaded file, fallback to folder 'profile film', lalu external URL.
      */
     public function getPosterAttribute(): ?string
     {
@@ -79,7 +79,22 @@ class Movie extends Model
             return Storage::disk('public')->url($this->poster_path);
         }
 
-        return $this->poster_url ?: null;
+        // Cek di folder profile film
+        $slugName = $this->slug . '.jpg';
+        $titleName = strtolower($this->title) . '.jpg';
+        
+        if (file_exists(public_path('profile film/' . $slugName))) {
+            return '/profile film/' . $slugName;
+        }
+        if (file_exists(public_path('profile film/' . $titleName))) {
+            return '/profile film/' . rawurlencode($titleName);
+        }
+
+        if ($this->poster_url) {
+            return $this->poster_url;
+        }
+
+        return null;
     }
 
     /**
@@ -91,7 +106,32 @@ class Movie extends Model
             return Storage::disk('public')->url($this->backdrop_path);
         }
 
-        return $this->backdrop_url ?: null;
+        // Cek di folder gambar background
+        $dir = public_path('gambar background');
+        if (is_dir($dir)) {
+            $files = scandir($dir);
+            foreach ($files as $file) {
+                if ($file === '.' || $file === '..') continue;
+                $filename = pathinfo($file, PATHINFO_FILENAME);
+                
+                // Pencocokan langsung
+                if ($filename === $this->slug || str_replace('-', ' ', $filename) === strtolower($this->title) || strtolower($filename) === strtolower($this->title)) {
+                    return '/gambar background/' . rawurlencode($file);
+                }
+                
+                // Fallback untuk penamaan manual pengguna yang tidak standar
+                if ($this->slug === 'despicable-me-3' && str_contains($file, 'minion')) return '/gambar background/' . rawurlencode($file);
+                if ($this->slug === 'world-war-z' && str_contains($file, 'war z')) return '/gambar background/' . rawurlencode($file);
+                if ($this->slug === 'kung-fu-panda' && str_contains(str_replace(' ', '', $file), 'kungfupanda')) return '/gambar background/' . rawurlencode($file);
+                if ($this->slug === 'ratatouille' && str_contains($file, 'ratatouli')) return '/gambar background/' . rawurlencode($file);
+            }
+        }
+
+        if ($this->backdrop_url) {
+            return $this->backdrop_url;
+        }
+
+        return null;
     }
 
     /**
@@ -99,6 +139,6 @@ class Movie extends Model
      */
     public function getHasBackdropAttribute(): bool
     {
-        return ! empty($this->backdrop_path) || ! empty($this->backdrop_url);
+        return ! empty($this->backdrop_path) || ! empty($this->backdrop_url) || ! empty($this->backdrop);
     }
 }

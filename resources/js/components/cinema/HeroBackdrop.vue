@@ -4,12 +4,11 @@
  *
  * - Backdrop image fullscreen dengan gradient bottom ke base color
  * - Saat user scroll, backdrop perlahan blur + dim (parallax effect via @vueuse/core)
+ * - Ken Burns animation saat mount.
  * - Fallback: jika `image` null, render gradient gelap minimalis
- *
- * Implementasi parallax disempurnakan di Task 9b — di sini kita siapkan strukturnya.
  */
-import { computed, useTemplateRef } from 'vue';
 import { useScroll } from '@vueuse/core';
+import { computed, useTemplateRef, ref } from 'vue';
 
 interface Props {
     image: string | null | undefined;
@@ -35,21 +34,28 @@ const props = withDefaults(defineProps<Props>(), {
 const sentinelRef = useTemplateRef<HTMLDivElement>('sentinel');
 const { y: scrollY } = useScroll(window, { throttle: 16 });
 
+const imageError = ref(false);
+
 // Normalisasi scroll 0..1 berbasis tinggi viewport (1 viewport scroll → fully blurred)
 const progress = computed(() => {
-    if (!props.parallax) return 0;
+    if (!props.parallax) {
+return 0;
+}
+
     const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+
     return Math.min(1, Math.max(0, scrollY.value / vh));
 });
 
 const overlayStyle = computed(() => {
     // Baseline blur + scale jika kita pakai poster sebagai fallback (cuma 2:3, perlu di-cover penuh)
     const baseBlur = props.blurFallback ? 30 : 0;
-    const baseScale = props.blurFallback ? 1.4 : 1;
+    const baseScale = props.blurFallback ? 1.4 : 1.05; // 1.05 base scale untuk efek ken-burns agar tidak overflow
 
     return {
         filter: `blur(${baseBlur + (props.parallax ? progress.value * 20 : 0)}px)`,
         opacity: props.parallax ? 1 - progress.value * 0.7 : 1,
+        // The scale here is combined with the CSS animation via the child element.
         transform: `scale(${baseScale + (props.parallax ? progress.value * 0.05 : 0)})`,
     };
 });
@@ -59,19 +65,20 @@ const overlayStyle = computed(() => {
     <div
         ref="sentinel"
         :class="[
-            'pointer-events-none w-full',
+            'pointer-events-none w-full overflow-hidden',
             fixed ? 'fixed inset-x-0 top-0 z-0' : 'absolute inset-x-0 top-0 z-0',
         ]"
         :style="{ height }"
     >
-        <!-- Layer image -->
-        <div class="absolute inset-0" :style="overlayStyle">
+        <!-- Layer image with parallax styles -->
+        <div class="absolute inset-0 transition-transform duration-300 ease-out origin-center" :style="overlayStyle">
             <img
-                v-if="image"
+                v-if="image && !imageError"
                 :src="image"
+                @error="imageError = true"
                 alt=""
                 aria-hidden="true"
-                class="h-full w-full object-cover"
+                class="h-full w-full object-cover animate-ken-burns"
             />
             <div
                 v-else
@@ -81,8 +88,19 @@ const overlayStyle = computed(() => {
 
         <!-- Gradient overlay untuk readability + transisi mulus ke base bg -->
         <div
-            class="absolute inset-0 bg-gradient-to-t from-[var(--cinema-base)] via-[var(--cinema-base)]/50 to-transparent"
+            class="absolute inset-0 bg-gradient-to-t from-[var(--cinema-base)] via-[var(--cinema-base)]/60 to-transparent"
         />
         <div class="absolute inset-0 bg-black/30" />
     </div>
 </template>
+
+<style scoped>
+@keyframes ken-burns {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1) translate(-1%, -1%); }
+}
+.animate-ken-burns {
+    animation: ken-burns 30s ease-out forwards;
+    transform-origin: top left;
+}
+</style>

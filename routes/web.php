@@ -69,6 +69,7 @@ Route::prefix('admin')
         // Users management
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::patch('users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.update-role');
+        Route::patch('users/{user}/trust-score', [AdminUserController::class, 'updateTrustScore'])->name('users.update-trust-score');
         Route::post('users/{user}/ban', [AdminUserController::class, 'ban'])->name('users.ban');
         Route::post('users/{user}/unban', [AdminUserController::class, 'unban'])->name('users.unban');
     });

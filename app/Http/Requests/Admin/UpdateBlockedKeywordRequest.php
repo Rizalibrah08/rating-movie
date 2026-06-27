@@ -16,7 +16,7 @@ class UpdateBlockedKeywordRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('keyword')) {
+        if ($this->has('keyword') && ! $this->boolean('is_regex')) {
             $this->merge([
                 'keyword' => Str::of((string) $this->input('keyword'))->lower()->trim()->toString(),
             ]);
@@ -37,6 +37,7 @@ class UpdateBlockedKeywordRequest extends FormRequest
             ],
             'category' => ['required', Rule::in(BlockedKeyword::CATEGORIES)],
             'is_active' => ['nullable', 'boolean'],
+            'is_regex' => ['nullable', 'boolean'],
         ];
     }
 }

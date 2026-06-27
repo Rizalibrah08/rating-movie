@@ -37,7 +37,10 @@ function cancelEdit() {
 }
 
 function submitEdit() {
-    if (!editingId.value) return;
+    if (!editingId.value) {
+return;
+}
+
     editProcessing.value = true;
     editError.value = null;
     const f = useForm({ name: editName.value });

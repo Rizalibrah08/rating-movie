@@ -29,7 +29,10 @@ interface Pagination {
 defineProps<{ reports: Pagination }>();
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     return new Date(iso).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
@@ -37,7 +40,10 @@ const hideForm = useForm({});
 const dismissForm = useForm({});
 
 function hide(id: number) {
-    if (!confirm('Sembunyikan ulasan ini? Status akan menjadi rejected.')) return;
+    if (!confirm('Sembunyikan ulasan ini? Status akan menjadi rejected.')) {
+return;
+}
+
     hideForm.post(`/admin/reports/${id}/hide`, { preserveScroll: true });
 }
 function dismiss(id: number) {

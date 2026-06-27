@@ -18,5 +18,6 @@ final readonly class ReviewContext
         /** Hash body normalisasi — dipakai untuk deteksi duplikat. */
         public string $bodyHash,
         public ?string $ip = null,
+        public int $trustScore = 0,
     ) {}
 }

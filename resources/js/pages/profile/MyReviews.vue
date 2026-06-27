@@ -22,7 +22,10 @@ interface Pagination<T> {
 defineProps<{ reviews: Pagination<ReviewItem> }>();
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 

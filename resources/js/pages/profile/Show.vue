@@ -31,11 +31,17 @@ defineProps<{
 }>();
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 function memberSince(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     return new Date(iso).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 }
 </script>

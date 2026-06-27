@@ -50,7 +50,11 @@ const sort = ref<Filters['sort']>(props.filters.sort);
 const yearOptions = computed(() => {
     const now = new Date().getFullYear();
     const arr: number[] = [];
-    for (let y = now; y >= 1990; y--) arr.push(y);
+
+    for (let y = now; y >= 1990; y--) {
+arr.push(y);
+}
+
     return arr;
 });
 
@@ -70,7 +74,10 @@ function applyFilters() {
 }
 
 watch(search, () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
+    if (debounceTimer) {
+clearTimeout(debounceTimer);
+}
+
     debounceTimer = setTimeout(applyFilters, 350);
 });
 

@@ -37,6 +37,7 @@ const flashError = ref<string | null>(null);
 function pickFlash() {
     flashSuccess.value = page.props.flash?.success ?? null;
     flashError.value = page.props.flash?.error ?? null;
+
     if (flashSuccess.value || flashError.value) {
         setTimeout(() => {
             flashSuccess.value = null;
@@ -51,7 +52,11 @@ const currentPath = computed(() => page.url.split('?')[0]);
 
 const breadcrumbText = computed(() => {
     const parts = currentPath.value.split('/').filter(Boolean);
-    if (parts.length === 0) return 'Admin';
+
+    if (parts.length === 0) {
+return 'Admin';
+}
+
     return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' / ');
 });
 
@@ -59,6 +64,7 @@ function isActive(item: NavItem): boolean {
     if (item.exact) {
         return currentPath.value === item.match;
     }
+
     return currentPath.value === item.match || currentPath.value.startsWith(item.match + '/');
 }
 

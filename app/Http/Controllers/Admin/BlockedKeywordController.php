@@ -65,6 +65,7 @@ class BlockedKeywordController extends Controller
             'keyword' => $request->validated('keyword'),
             'category' => $request->validated('category'),
             'is_active' => $request->boolean('is_active', true),
+            'is_regex' => $request->boolean('is_regex', false),
         ]);
 
         return back()->with('flash.success', 'Kata kunci ditambahkan ke blacklist.');
@@ -76,6 +77,7 @@ class BlockedKeywordController extends Controller
             'keyword' => $request->validated('keyword'),
             'category' => $request->validated('category'),
             'is_active' => $request->boolean('is_active', true),
+            'is_regex' => $request->boolean('is_regex', false),
         ]);
 
         return back()->with('flash.success', 'Kata kunci diperbarui.');

@@ -1,0 +1,99 @@
+name: Deploy Backend to Railway
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, pdo_pgsql, gd
+          tools: composer:v2
+          coverage: pcov
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Copy Environment File
+        run: cp .env.example .env
+
+      - name: Patch .env for CI
+        run: |
+          sed -i 's|DB_CONNECTION=.*|DB_CONNECTION=pgsql|' .env
+          sed -i 's|DB_HOST=.*|DB_HOST=127.0.0.1|' .env
+          sed -i 's|DB_PORT=.*|DB_PORT=5432|' .env
+          sed -i 's|DB_DATABASE=.*|DB_DATABASE=testing|' .env
+          sed -i 's|DB_USERNAME=.*|DB_USERNAME=postgres|' .env
+          sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=secret|' .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      - name: Run Migrations
+        run: php artisan migrate --force
+
+      - name: Run Tests with Coverage
+        run: ./vendor/bin/pest --coverage-clover coverage.xml
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --service backend --detach
+
+      - name: Run Migrations on Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway run --service backend php artisan migrate --force

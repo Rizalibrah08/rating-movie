@@ -39,7 +39,11 @@ function setRating(v: number) {
 const charCount = computed(() => form.body.trim().length);
 const wordCount = computed(() => {
     const trimmed = form.body.trim();
-    if (!trimmed) return 0;
+
+    if (!trimmed) {
+return 0;
+}
+
     return trimmed
         .toLowerCase()
         .split(/\s+/)
@@ -49,17 +53,58 @@ const wordCount = computed(() => {
 
 const URL_PATTERN = /\b(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|id|co|io|me|tv|app|xyz|info|biz|live|site|online|store|shop)\b/i;
 
+/** Homoglyph map sinkron dengan PHP TextNormalizer::HOMOGLYPH_MAP */
+const HOMOGLYPH_MAP: Record<string, string> = {
+    // Cyrillic
+    а: 'a', А: 'a', е: 'e', Е: 'e', о: 'o', О: 'o', р: 'p', Р: 'p',
+    с: 'c', С: 'c', х: 'x', Х: 'x', і: 'i', І: 'i', ј: 'j', Ј: 'j',
+    ѕ: 's', Ѕ: 's', у: 'y', У: 'y', к: 'k', К: 'k', м: 'm', М: 'm',
+    т: 't', Т: 't', н: 'h', Н: 'h',
+    // Greek
+    α: 'a', Α: 'a', ε: 'e', Ε: 'e', ο: 'o', Ο: 'o', ρ: 'p', Ρ: 'p',
+    ν: 'v', Ν: 'n', κ: 'k', Κ: 'k', τ: 't', Τ: 't', υ: 'u', Υ: 'y',
+    ι: 'i', Ι: 'i',
+};
+
+/** Extended leet map sinkron dengan PHP TextNormalizer::LEETSPEAK_MAP */
+const LEET_MAP: Record<string, string> = {
+    '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's',
+    '7': 't', '@': 'a', '$': 's', '8': 'b', '!': 'i',
+    '€': 'e', '6': 'g', '#': 'h', '9': 'q', '+': 't',
+    '%': 'x', '2': 'z', '(': 'c', '|': 'i',
+};
+
+/**
+ * Normalisasi teks — sinkron dengan PHP TextNormalizer::normalize().
+ * Menangkap: zero-width, homoglyph, diacritics, separator, spaced-chars, leet, repeat.
+ */
 function normalizeForCheck(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/0/g, 'o')
-        .replace(/1/g, 'i')
-        .replace(/3/g, 'e')
-        .replace(/4/g, 'a')
-        .replace(/5/g, 's')
-        .replace(/(.)\1{2,}/g, '$1')
-        .replace(/\s+/g, ' ')
-        .trim();
+    // 1. Lowercase
+    let t = text.toLowerCase();
+
+    // 2. Strip zero-width & invisible chars
+    t = t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180D\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0]/g, '');
+
+    // 3. Homoglyph map
+    t = t.replace(/[аАеЕоОрРсСхХіІјЈѕЅуУкКмМтТнН\u03B1\u0391\u03B5\u0395\u03BF\u039F\u03C1\u03A1\u03BD\u039D\u03BA\u039A\u03C4\u03A4\u03C5\u03A5\u03B9\u0399]/g, (c) => HOMOGLYPH_MAP[c] ?? c);
+
+    // 4. Strip diacritics / accents (NFD → remove combining marks → NFC)
+    t = t.normalize('NFD').replace(/[\u0300-\u036F]/g, '').normalize('NFC');
+
+    // 5. Strip char separators: "j.e.l.e.k" → "jelek"
+    t = t.replace(/([a-z])[.\-_*\\/]{1,3}(?=[a-z])/g, '$1');
+
+    // 6. Collapse spaced-out chars: "j e l e k" → "jelek"
+    t = t.replace(/(?<!\w)((?:[a-z] ){2,}[a-z])(?!\w)/g, (m) => m.replace(/ /g, ''));
+
+    // 7. Extended leet map
+    t = t.replace(/[013456789@$!€#%+|(]/g, (c) => LEET_MAP[c] ?? c);
+
+    // 8. Compress repeated chars ≥2: "jeleek" → "jelek"
+    t = t.replace(/(.)\1+/g, '$1');
+
+    // 9. Collapse whitespace
+    return t.replace(/\s+/g, ' ').trim();
 }
 
 const hintIssues = computed(() => {
@@ -69,18 +114,22 @@ const hintIssues = computed(() => {
     if (charCount.value > 0 && charCount.value < 30) {
         issues.push({ kind: 'warn', message: `Min 30 karakter (${charCount.value}/30)` });
     }
+
     if (wordCount.value > 0 && wordCount.value < 5) {
         issues.push({ kind: 'warn', message: `Min 5 kata bermakna (${wordCount.value}/5)` });
     }
+
     if (URL_PATTERN.test(body)) {
         issues.push({ kind: 'warn', message: 'Tautan/URL tidak diperbolehkan' });
     }
 
     // Cek keyword (informational, server tetap final)
     const normalized = normalizeForCheck(body);
+
     for (const entry of props.blockedKeywords) {
         const escaped = entry.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
         const re = new RegExp('\\b' + escaped + '\\b', 'iu');
+
         if (re.test(normalized)) {
             issues.push({ kind: 'warn', message: `Mengandung kata terlarang: "${entry.keyword}"` });
             break; // satu cukup

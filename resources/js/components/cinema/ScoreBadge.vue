@@ -24,9 +24,18 @@ const props = withDefaults(defineProps<Props>(), {
 type Category = 'green' | 'yellow' | 'red' | 'grey';
 
 const category = computed<Category>(() => {
-    if (props.score === null || props.score === undefined) return 'grey';
-    if (props.score >= 75) return 'green';
-    if (props.score >= 50) return 'yellow';
+    if (props.score === null || props.score === undefined) {
+return 'grey';
+}
+
+    if (props.score >= 75) {
+return 'green';
+}
+
+    if (props.score >= 50) {
+return 'yellow';
+}
+
     return 'red';
 });
 
@@ -59,6 +68,7 @@ const colorClasses = computed(() => {
         case 'grey':
             return 'bg-[var(--score-grey)] text-white';
     }
+
     return '';
 });
 

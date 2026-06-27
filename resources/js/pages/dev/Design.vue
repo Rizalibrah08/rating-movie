@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import ScoreBadge from '@/components/cinema/ScoreBadge.vue';
-import MovieCard from '@/components/cinema/MovieCard.vue';
 import GlassPanel from '@/components/cinema/GlassPanel.vue';
+import MovieCard from '@/components/cinema/MovieCard.vue';
+import ScoreBadge from '@/components/cinema/ScoreBadge.vue';
 
 const sampleMovies = [
     {

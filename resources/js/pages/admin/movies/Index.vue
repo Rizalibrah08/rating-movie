@@ -31,7 +31,10 @@ const search = ref(props.filters.q);
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(search, (val) => {
-    if (debounceTimer) clearTimeout(debounceTimer);
+    if (debounceTimer) {
+clearTimeout(debounceTimer);
+}
+
     debounceTimer = setTimeout(() => {
         router.get('/admin/movies', { q: val || undefined }, { preserveState: true, preserveScroll: true, replace: true });
     }, 350);

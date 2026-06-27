@@ -59,10 +59,14 @@ const form = useForm({
 const posterPreview = ref<string | null>(props.initial?.poster ?? null);
 const backdropPreview = ref<string | null>(props.initial?.backdrop ?? null);
 
+const posterInputRef = ref<HTMLInputElement | null>(null);
+const backdropInputRef = ref<HTMLInputElement | null>(null);
+
 function onPosterFile(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
     form.poster_file = file;
+
     if (file) {
         posterPreview.value = URL.createObjectURL(file);
         form.remove_poster = false;
@@ -73,6 +77,7 @@ function onBackdropFile(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
     form.backdrop_file = file;
+
     if (file) {
         backdropPreview.value = URL.createObjectURL(file);
         form.remove_backdrop = false;
@@ -95,8 +100,12 @@ function clearBackdrop() {
 
 function toggleGenre(id: number) {
     const idx = form.genres.indexOf(id);
-    if (idx >= 0) form.genres.splice(idx, 1);
-    else form.genres.push(id);
+
+    if (idx >= 0) {
+form.genres.splice(idx, 1);
+} else {
+form.genres.push(id);
+}
 }
 
 const action = computed(() =>
@@ -201,13 +210,22 @@ function cancel() {
                 </div>
                 <div class="space-y-2">
                     <template v-if="posterMode === 'file'">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            @change="onPosterFile"
-                            class="block w-full text-sm text-[var(--cinema-muted)] file:mr-4 file:rounded-md file:border-0 file:bg-[var(--cinema-elevated)] file:px-4 file:py-2 file:text-sm file:text-[var(--cinema-text)]"
-                        />
-                        <p class="text-xs text-[var(--cinema-muted)]">JPG/PNG/WebP, maks 4 MB.</p>
+                        <label
+                            class="relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[var(--cinema-border)] bg-[var(--cinema-surface)] py-6 px-4 text-center hover:bg-[var(--cinema-elevated)] transition-colors"
+                            @dragover.prevent
+                            @drop.prevent="(e) => { const file = e.dataTransfer?.files?.[0]; if(file) { onPosterFile({ target: { files: [file] } } as any); } }"
+                        >
+                            <svg class="mb-2 h-8 w-8 text-[var(--cinema-muted)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                            <span class="text-sm font-medium text-[var(--cinema-text)]">Pilih atau letakkan poster di sini</span>
+                            <span class="text-xs text-[var(--cinema-muted)] mt-1">JPG, PNG, WebP (Maks 4 MB)</span>
+                            <input
+                                ref="posterInputRef"
+                                type="file"
+                                accept="image/*"
+                                @change="onPosterFile"
+                                class="hidden"
+                            />
+                        </label>
                     </template>
                     <template v-else>
                         <input
@@ -254,13 +272,22 @@ function cancel() {
                     <div v-else class="h-full w-full flex items-center justify-center text-xs text-[var(--cinema-muted)]">No backdrop (akan fallback ke poster blur)</div>
                 </div>
                 <template v-if="backdropMode === 'file'">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        @change="onBackdropFile"
-                        class="block w-full text-sm text-[var(--cinema-muted)] file:mr-4 file:rounded-md file:border-0 file:bg-[var(--cinema-elevated)] file:px-4 file:py-2 file:text-sm file:text-[var(--cinema-text)]"
-                    />
-                    <p class="text-xs text-[var(--cinema-muted)]">JPG/PNG/WebP, maks 8 MB. Rasio idealnya 16:9 (1920×1080).</p>
+                    <label
+                        class="relative flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[var(--cinema-border)] bg-[var(--cinema-surface)] py-8 px-4 text-center hover:bg-[var(--cinema-elevated)] transition-colors"
+                        @dragover.prevent
+                        @drop.prevent="(e) => { const file = e.dataTransfer?.files?.[0]; if(file) { onBackdropFile({ target: { files: [file] } } as any); } }"
+                    >
+                        <svg class="mb-2 h-10 w-10 text-[var(--cinema-muted)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                        <span class="text-sm font-medium text-[var(--cinema-text)]">Pilih atau letakkan backdrop di sini</span>
+                        <span class="text-xs text-[var(--cinema-muted)] mt-1">JPG, PNG, WebP (Maks 8 MB). Rasio ideal 16:9.</span>
+                        <input
+                            ref="backdropInputRef"
+                            type="file"
+                            accept="image/*"
+                            @change="onBackdropFile"
+                            class="hidden"
+                        />
+                    </label>
                 </template>
                 <template v-else>
                     <input

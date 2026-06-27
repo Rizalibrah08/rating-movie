@@ -10,6 +10,7 @@
  * Click → navigate to /movies/{slug}
  */
 import { Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import ScoreBadge from './ScoreBadge.vue';
 
 interface Movie {
@@ -37,6 +38,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const showScore = props.movie.avg_score != null || !props.hideScoreWhenNull;
 const genreLabel = props.movie.genres?.[0]?.name ?? null;
+
+const imageError = ref(false);
 </script>
 
 <template>
@@ -46,17 +49,21 @@ const genreLabel = props.movie.genres?.[0]?.name ?? null;
     >
         <div class="relative overflow-hidden rounded-lg bg-[var(--cinema-elevated)] aspect-[2/3] shadow-lg">
             <img
-                v-if="movie.poster"
+                v-if="movie.poster && !imageError"
                 :src="movie.poster"
                 :alt="movie.title"
                 loading="lazy"
-                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                @error="imageError = true"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div
                 v-else
-                class="flex h-full w-full items-center justify-center text-[var(--cinema-muted)] text-xs"
+                class="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[var(--cinema-surface)] to-[var(--cinema-border)] p-4 text-center transition-transform duration-500 group-hover:scale-110"
             >
-                No poster
+                <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--cinema-elevated)] shadow-inner">
+                    <span class="font-display text-2xl text-[var(--cinema-muted)]">{{ movie.title.substring(0, 2).toUpperCase() }}</span>
+                </div>
+                <span class="font-display text-sm tracking-widest text-[var(--cinema-muted)] opacity-50">{{ movie.title }}</span>
             </div>
 
             <!-- Gradient bawah untuk meningkatkan kontras ScoreBadge -->

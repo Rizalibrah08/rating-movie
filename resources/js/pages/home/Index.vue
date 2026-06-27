@@ -59,13 +59,20 @@ const activeHero = computed(() => props.heroMovies[activeIndex.value] ?? null);
 let rotateTimer: ReturnType<typeof setInterval> | null = null;
 
 function nextHero() {
-    if (props.heroMovies.length <= 1) return;
+    if (props.heroMovies.length <= 1) {
+return;
+}
+
     activeIndex.value = (activeIndex.value + 1) % props.heroMovies.length;
 }
 function setHero(i: number) {
     activeIndex.value = i;
+
     // restart timer agar user yang manual klik tidak langsung di-override
-    if (rotateTimer) clearInterval(rotateTimer);
+    if (rotateTimer) {
+clearInterval(rotateTimer);
+}
+
     if (props.heroMovies.length > 1) {
         rotateTimer = setInterval(nextHero, 6000);
     }
@@ -77,12 +84,18 @@ onMounted(() => {
     }
 });
 onBeforeUnmount(() => {
-    if (rotateTimer) clearInterval(rotateTimer);
+    if (rotateTimer) {
+clearInterval(rotateTimer);
+}
 });
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     const d = new Date(iso);
+
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 

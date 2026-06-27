@@ -55,4 +55,15 @@ class UserController extends Controller
 
         return back()->with('success', 'User has been unbanned.');
     }
+
+    public function updateTrustScore(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'trust_score' => ['required', 'integer', 'min:-1000', 'max:1000'],
+        ]);
+
+        $user->update(['trust_score' => $validated['trust_score']]);
+
+        return back()->with('success', 'User trust score updated.');
+    }
 }

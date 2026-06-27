@@ -36,7 +36,7 @@ it('returns null backdrop when both backdrop fields are empty', function () {
 it('returns external backdrop URL when set', function () {
     $movie = Movie::factory()->withBackdrop()->create();
 
-    expect($movie->backdrop)->toStartWith('https://')
+    expect($movie->backdrop)->toStartWith('/image/')
         ->and($movie->has_backdrop)->toBeTrue();
 });
 

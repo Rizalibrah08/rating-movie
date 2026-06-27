@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import ScoreBadge from '@/components/cinema/ScoreBadge.vue';
 import MovieCard from '@/components/cinema/MovieCard.vue';
+import ScoreBadge from '@/components/cinema/ScoreBadge.vue';
 
 interface ColorDist {
     green: number;
@@ -71,7 +71,10 @@ function pct(n: number): number {
                 <p class="text-xs text-[var(--cinema-muted)] mt-1 flex gap-2">
                     <span class="text-[var(--score-green)]">{{ reviewsByStatus.published }} pub</span>
                     <span class="text-[var(--score-yellow)]">{{ reviewsByStatus.pending }} pending</span>
-                    <span class="text-[var(--score-red)]">{{ reviewsByStatus.rejected }} rej</span>
+                    <span class="text-[var(--score-red)]" :title="totalReviews ? Math.round((reviewsByStatus.rejected / totalReviews) * 100) + '% Rejection Rate' : ''">
+                        {{ reviewsByStatus.rejected }} rej
+                        <span v-if="totalReviews" class="opacity-70 ml-1">({{ Math.round((reviewsByStatus.rejected / totalReviews) * 100) }}%)</span>
+                    </span>
                 </p>
             </div>
             <div class="rounded-md border border-[var(--cinema-border)] bg-[var(--cinema-surface)] p-5">

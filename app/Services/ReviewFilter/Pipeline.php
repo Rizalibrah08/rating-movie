@@ -37,6 +37,11 @@ final class Pipeline
     public function run(ReviewContext $ctx): RuleResult
     {
         foreach ($this->rules as $rule) {
+            // Bypass certain rules if user has high trust score
+            if ($ctx->trustScore >= 50 && in_array($rule->name(), ['url_detection', 'separated_chars'])) {
+                continue;
+            }
+
             $result = $rule->check($ctx);
             if (! $result->passed) {
                 return $result;

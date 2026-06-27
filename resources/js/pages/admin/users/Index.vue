@@ -30,10 +30,12 @@ const processingId = ref<number | null>(null);
 function toggleBan(user: User) {
     if (user.role === 'admin') {
         alert('Cannot ban an admin.');
+
         return;
     }
     
     processingId.value = user.id;
+
     if (user.banned_at) {
         actionForm.post(`/admin/users/${user.id}/unban`, {
             preserveScroll: true,
@@ -54,6 +56,7 @@ function toggleBan(user: User) {
 function toggleRole(user: User) {
     processingId.value = user.id;
     const newRole = user.role === 'admin' ? 'user' : 'admin';
+
     if (confirm(`Ubah role ${user.name} menjadi ${newRole.toUpperCase()}?`)) {
         actionForm.patch(`/admin/users/${user.id}/role`, {
             data: { role: newRole },
@@ -63,6 +66,24 @@ function toggleRole(user: User) {
     } else {
         processingId.value = null;
     }
+}
+
+function updateTrustScorePrompt(user: User) {
+    const val = prompt(`Masukkan Trust Score baru untuk ${user.name} (saat ini: ${user.trust_score}):`, user.trust_score.toString());
+    if (val === null) return;
+    
+    const num = parseInt(val, 10);
+    if (isNaN(num) || num < -1000 || num > 1000) {
+        alert('Trust Score harus berupa angka antara -1000 dan 1000.');
+        return;
+    }
+
+    processingId.value = user.id;
+    actionForm.patch(`/admin/users/${user.id}/trust-score`, {
+        data: { trust_score: num },
+        preserveScroll: true,
+        onFinish: () => (processingId.value = null),
+    });
 }
 </script>
 
@@ -109,7 +130,14 @@ function toggleRole(user: User) {
                             </span>
                         </td>
                         <td class="px-4 py-3 text-center font-mono">
-                            {{ user.trust_score }}
+                            <button
+                                type="button"
+                                @click="updateTrustScorePrompt(user)"
+                                class="hover:text-[var(--cinema-teal)] hover:underline decoration-dashed underline-offset-4"
+                                :disabled="processingId === user.id"
+                            >
+                                {{ user.trust_score }}
+                            </button>
                         </td>
                         <td class="px-4 py-3">
                             <span :class="[

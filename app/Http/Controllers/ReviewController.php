@@ -41,6 +41,7 @@ class ReviewController extends Controller
             normalizedBody: TextNormalizer::normalize($body),
             bodyHash: TextNormalizer::canonicalHash($body),
             ip: $ip,
+            trustScore: (int) $user->trust_score,
         );
 
         $result = $this->pipeline->run($ctx);

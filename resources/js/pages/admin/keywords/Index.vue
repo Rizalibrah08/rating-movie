@@ -7,6 +7,7 @@ interface Keyword {
     keyword: string;
     category: string;
     is_active: boolean;
+    is_regex: boolean;
     created_at: string;
 }
 
@@ -55,7 +56,10 @@ function applyFilters() {
     );
 }
 watch(search, () => {
-    if (debounceTimer) clearTimeout(debounceTimer);
+    if (debounceTimer) {
+clearTimeout(debounceTimer);
+}
+
     debounceTimer = setTimeout(applyFilters, 350);
 });
 watch([selectedCategory, activeFilter], () => applyFilters());
@@ -65,6 +69,7 @@ const createForm = useForm({
     keyword: '',
     category: 'spam' as string,
     is_active: true as boolean,
+    is_regex: false as boolean,
 });
 
 function submitCreate() {
@@ -79,6 +84,7 @@ const editingId = ref<number | null>(null);
 const editKeyword = ref('');
 const editCategory = ref('');
 const editActive = ref(true);
+const editRegex = ref(false);
 const editError = ref<string | null>(null);
 const editProcessing = ref(false);
 
@@ -87,6 +93,7 @@ function startEdit(k: Keyword) {
     editKeyword.value = k.keyword;
     editCategory.value = k.category;
     editActive.value = k.is_active;
+    editRegex.value = k.is_regex;
     editError.value = null;
 }
 
@@ -96,13 +103,17 @@ function cancelEdit() {
 }
 
 function submitEdit() {
-    if (!editingId.value) return;
+    if (!editingId.value) {
+return;
+}
+
     editProcessing.value = true;
     editError.value = null;
     const f = useForm({
         keyword: editKeyword.value,
         category: editCategory.value,
         is_active: editActive.value,
+        is_regex: editRegex.value,
     });
     f.put(`/admin/keywords/${editingId.value}`, {
         preserveScroll: true,
@@ -213,6 +224,14 @@ const totalAll = computed(() =>
                 />
                 Aktif
             </label>
+            <label class="inline-flex items-center gap-2 text-sm">
+                <input
+                    v-model="createForm.is_regex"
+                    type="checkbox"
+                    class="rounded border-[var(--cinema-border)] bg-[var(--cinema-elevated)]"
+                />
+                Regex
+            </label>
             <button
                 type="submit"
                 :disabled="createForm.processing"
@@ -272,9 +291,16 @@ const totalAll = computed(() =>
                                     @keyup.escape="cancelEdit"
                                     class="rounded-md bg-[var(--cinema-elevated)] border border-[var(--cinema-border)] px-2 py-1 text-sm w-full"
                                 />
+                                <label class="inline-flex items-center gap-2 text-xs mt-2 block">
+                                    <input v-model="editRegex" type="checkbox" class="rounded" />
+                                    Regex
+                                </label>
                                 <p v-if="editError" class="text-xs text-[var(--score-red)] mt-1">{{ editError }}</p>
                             </template>
-                            <span v-else>{{ k.keyword }}</span>
+                            <span v-else>
+                                {{ k.keyword }}
+                                <span v-if="k.is_regex" class="ml-2 inline-flex items-center rounded-full bg-blue-500/15 px-1.5 py-0.5 text-[10px] text-blue-500 font-bold uppercase tracking-widest">Regex</span>
+                            </span>
                         </td>
                         <td class="px-4 py-3">
                             <template v-if="editingId === k.id">

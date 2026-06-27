@@ -25,8 +25,12 @@ interface Pagination {
 defineProps<{ reviews: Pagination }>();
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     const d = new Date(iso);
+
     return d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
@@ -37,7 +41,10 @@ function approve(id: number) {
     approveForm.post(`/admin/moderation/${id}/approve`, { preserveScroll: true });
 }
 function reject(id: number) {
-    if (!confirm('Tolak ulasan ini? Status akan menjadi rejected dan tidak ditampilkan.')) return;
+    if (!confirm('Tolak ulasan ini? Status akan menjadi rejected dan tidak ditampilkan.')) {
+return;
+}
+
     rejectForm.post(`/admin/moderation/${id}/reject`, { preserveScroll: true });
 }
 </script>

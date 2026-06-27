@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import HeroBackdrop from '@/components/cinema/HeroBackdrop.vue';
 import GlassPanel from '@/components/cinema/GlassPanel.vue';
-import ScoreBadge from '@/components/cinema/ScoreBadge.vue';
+import HeroBackdrop from '@/components/cinema/HeroBackdrop.vue';
 import ReviewForm from '@/components/cinema/ReviewForm.vue';
+import ScoreBadge from '@/components/cinema/ScoreBadge.vue';
 
 interface Genre {
     id: number;
@@ -67,10 +67,15 @@ const user = computed(() => page.props.auth?.user ?? null);
 const heroImage = computed(() => props.movie.backdrop ?? props.movie.poster);
 
 const showForm = ref(false);
+const imageError = ref(false);
 
 function formatDate(iso: string | null): string {
-    if (!iso) return '';
+    if (!iso) {
+return '';
+}
+
     const d = new Date(iso);
+
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -80,6 +85,7 @@ const flashError = ref<string | null>(null);
 function pickFlash() {
     flashSuccess.value = page.props.flash?.success ?? null;
     flashError.value = page.props.flash?.error ?? null;
+
     if (flashSuccess.value || flashError.value) {
         setTimeout(() => {
             flashSuccess.value = null;
@@ -110,7 +116,10 @@ function closeReport() {
     reportingReviewId.value = null;
 }
 function submitReport() {
-    if (!reportingReviewId.value) return;
+    if (!reportingReviewId.value) {
+return;
+}
+
     reportForm.post(`/reviews/${reportingReviewId.value}/report`, {
         preserveScroll: true,
         onSuccess: () => closeReport(),
@@ -137,10 +146,13 @@ function submitReport() {
             <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8 w-full">
                 <!-- Poster -->
                 <div class="hidden md:block">
-                    <div class="aspect-[2/3] overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/10">
-                        <img v-if="movie.poster" :src="movie.poster" :alt="movie.title" class="h-full w-full object-cover" />
-                        <div v-else class="h-full w-full bg-[var(--cinema-elevated)] flex items-center justify-center text-[var(--cinema-muted)]">
-                            No poster
+                    <div class="group aspect-[2/3] overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/10 perspective-1000">
+                        <img v-if="movie.poster && !imageError" :src="movie.poster" :alt="movie.title" @error="imageError = true" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 group-hover:rotate-1" />
+                        <div v-else class="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[var(--cinema-surface)] to-[var(--cinema-border)] p-6 text-center transition-transform duration-500 group-hover:scale-105 group-hover:rotate-1">
+                            <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--cinema-elevated)] shadow-inner">
+                                <span class="font-display text-4xl text-[var(--cinema-muted)]">{{ movie.title.substring(0, 2).toUpperCase() }}</span>
+                            </div>
+                            <span class="font-display text-lg tracking-widest text-[var(--cinema-muted)] opacity-50">{{ movie.title }}</span>
                         </div>
                     </div>
                 </div>
